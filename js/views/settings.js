@@ -35,7 +35,8 @@ Views.settings = (() => {
         ${!connected ? `
           <div class="field">
             <label>Google OAuth Client ID</label>
-            <input type="text" id="client-id-input" placeholder="xxxx.apps.googleusercontent.com" value="${escapeHtml(clientId)}">
+            <input type="text" id="client-id-input" placeholder="xxxx.apps.googleusercontent.com" value="${escapeHtml(clientId)}"
+              autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false">
             <div class="text-sm text-dim mt-8">One-time setup — see README.md for the exact Google Cloud Console steps.</div>
           </div>
           <button class="btn btn-primary btn-block" id="drive-connect">Connect Google Drive</button>
@@ -88,7 +89,7 @@ Views.settings = (() => {
     const clientIdInput = container.querySelector('#client-id-input');
     if (clientIdInput) {
       clientIdInput.addEventListener('change', async (e) => {
-        await setSetting('googleClientId', e.target.value.trim());
+        await setSetting('googleClientId', e.target.value.replace(/\s+/g, ''));
       });
     }
 
@@ -98,7 +99,10 @@ Views.settings = (() => {
       // DriveAuth.connectSync — Safari silently blocks the sign-in popup if
       // it isn't opened synchronously in direct response to this click.
       connectBtn.addEventListener('click', () => {
-        const id = container.querySelector('#client-id-input').value.trim();
+        // Strip ALL whitespace, not just leading/trailing — a stray space
+        // anywhere (from autocorrect, or a line break from copy-pasting)
+        // is enough to make Google reject the request as malformed.
+        const id = container.querySelector('#client-id-input').value.replace(/\s+/g, '');
         if (!id) { showToast('Paste your Google Client ID first'); return; }
         if (!DriveAuth.gisReady()) { showToast('Still loading Google sign-in — try again in a moment'); return; }
         DriveAuth.connectSync(id, {
