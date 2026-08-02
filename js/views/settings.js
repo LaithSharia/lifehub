@@ -32,13 +32,14 @@ Views.settings = (() => {
 
       <div class="section-title">Google Drive sync</div>
       <div class="card">
+        <div class="field">
+          <label>Google OAuth Client ID</label>
+          <input type="text" id="client-id-input" placeholder="xxxx.apps.googleusercontent.com" value="${escapeHtml(clientId)}"
+            autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false">
+          <div class="text-sm text-dim mt-8">One-time setup — see README.md for the exact Google Cloud Console steps.
+            ${!clientId ? ' <b>This is currently empty — sync will fail until it\'s set.</b>' : ''}</div>
+        </div>
         ${!connected ? `
-          <div class="field">
-            <label>Google OAuth Client ID</label>
-            <input type="text" id="client-id-input" placeholder="xxxx.apps.googleusercontent.com" value="${escapeHtml(clientId)}"
-              autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false">
-            <div class="text-sm text-dim mt-8">One-time setup — see README.md for the exact Google Cloud Console steps.</div>
-          </div>
           <button class="btn btn-primary btn-block" id="drive-connect">Connect Google Drive</button>
         ` : `
           <div class="card-row">
@@ -89,7 +90,15 @@ Views.settings = (() => {
     const clientIdInput = container.querySelector('#client-id-input');
     if (clientIdInput) {
       clientIdInput.addEventListener('change', async (e) => {
-        await setSetting('googleClientId', e.target.value.replace(/\s+/g, ''));
+        const id = e.target.value.replace(/\s+/g, '');
+        await setSetting('googleClientId', id);
+        // Also update the in-memory copy immediately, not just the saved
+        // setting — otherwise a fix made here wouldn't take effect until
+        // the next full reload (which is exactly the "field was empty but
+        // Connected still showed" situation this field exists to recover
+        // from).
+        DriveAuth.setCachedClientId(id);
+        if (id) showToast('Client ID saved');
       });
     }
 

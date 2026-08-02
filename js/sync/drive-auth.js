@@ -41,6 +41,12 @@ const DriveAuth = (() => {
     cachedClientId = await getClientId();
   }
 
+  // Lets the Settings UI update the in-memory copy immediately when the
+  // Client ID field is edited, without waiting for the next reload.
+  function setCachedClientId(id) {
+    cachedClientId = id;
+  }
+
   function hasValidToken() {
     return !!(accessToken && Date.now() < tokenExpiresAt);
   }
@@ -118,6 +124,6 @@ const DriveAuth = (() => {
 
   return {
     getValidToken, connectSync, ensureTokenSync, hasValidToken,
-    disconnect, isConnected, gisReady, primeClientId
+    disconnect, isConnected, gisReady, primeClientId, setCachedClientId
   };
 })();
