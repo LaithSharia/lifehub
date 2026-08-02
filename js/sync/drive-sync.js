@@ -154,7 +154,10 @@ const DriveSync = (() => {
     } catch (err) {
       console.warn('Drive sync failed', err);
       setSyncIcon('error');
-      if (!silent) showToast('Sync failed — see Settings');
+      // Surfacing the real reason directly in the toast, since checking a
+      // browser console isn't practical on a phone.
+      const reason = err?.message || err?.error || (typeof err === 'string' ? err : 'unknown error');
+      if (!silent) showToast(`Sync failed: ${reason}`, 5000);
       return { status: 'error', error: err };
     }
   }

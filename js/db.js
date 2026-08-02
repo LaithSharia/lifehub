@@ -70,53 +70,15 @@ const DEFAULT_CATEGORIES = [
   { name: 'Other',          icon: '📦', color: '#7a8894' }
 ];
 
-const DEFAULT_MEDICATIONS = [
-  {
-    name: 'Thyroxine (Euthyrox)',
-    dose: '',
-    scheduleType: 'fixed-time',
-    scheduleTime: '05:15',
-    note: 'Take on empty stomach, wait 30–60 min before eating',
-    icon: '⏰',
-    color: '#c94b4b'
-  },
-  {
-    name: 'Selenium',
-    dose: '',
-    scheduleType: 'after-first-meal',
-    scheduleTime: '',
-    note: 'After your first meal of the day',
-    icon: '🍳',
-    color: '#b9812a'
-  },
-  {
-    name: 'Omega-3',
-    dose: '',
-    scheduleType: 'lunch',
-    scheduleTime: '',
-    note: 'With lunch',
-    icon: '🐟',
-    color: '#4f7be0'
-  },
-  {
-    name: 'B12',
-    dose: '',
-    scheduleType: 'lunch',
-    scheduleTime: '',
-    note: 'With lunch',
-    icon: '🟡',
-    color: '#d6a44f'
-  }
-];
+// Intentionally no pre-seeded medications here — this file ends up in a
+// git repo, and hardcoding real medication names would bake a health
+// condition into source control. Add your own via the Medications tab's
+// "+ New medication" form on first launch instead (see README.md).
 
 async function ensureSeedData() {
   const catCount = await db.categories.count();
   if (catCount === 0) {
     await db.categories.bulkAdd(DEFAULT_CATEGORIES.map((c, i) => ({ ...c, order: i })));
-  }
-  const medCount = await db.medications.count();
-  if (medCount === 0) {
-    await db.medications.bulkAdd(DEFAULT_MEDICATIONS.map((m, i) => ({ ...m, order: i, active: true })));
   }
   const settingsCount = await db.settings.count();
   if (settingsCount === 0) {
