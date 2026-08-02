@@ -1,9 +1,12 @@
 /* ==========================================================================
-   service-worker.js — caches the app shell so LifeHub opens with zero
-   network. Your actual data lives in IndexedDB, not in this cache.
+   service-worker.js — caches the app shell so LifeHub still opens with zero
+   signal when you're offline. Your actual data lives in IndexedDB, not in
+   this cache. Fetches are network-first: whenever you're online, you always
+   get the latest deployed files; the cache only kicks in as a fallback once
+   there's no connection.
 
-   Bump CACHE_VERSION whenever you change any cached file and redeploy —
-   that's what makes the update actually reach installed devices.
+   Bump CACHE_VERSION if you ever remove or rename a file in SHELL_FILES —
+   that's what triggers cleanup of the old, now-orphaned cache entries.
    ========================================================================== */
 
 const CACHE_VERSION = 'lifehub-v1';
@@ -52,18 +55,21 @@ self.addEventListener('fetch', (event) => {
 
   if (event.request.method !== 'GET') return;
 
+  // Network-first, falling back to cache only when there's no connection.
+  // (Previously cache-first — but for an app still being actively updated,
+  // that meant a stale cached copy could keep serving indefinitely even
+  // after a fresh deploy, only fixed by manually clearing site data. This
+  // way, being online always gets you the latest deployed code, and the
+  // cache still covers you the moment you lose signal.)
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      const network = fetch(event.request)
-        .then(response => {
-          if (response && response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_VERSION).then(cache => cache.put(event.request, clone));
-          }
-          return response;
-        })
-        .catch(() => cached);
-      return cached || network;
-    })
+    fetch(event.request)
+      .then(response => {
+        if (response && response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_VERSION).then(cache => cache.put(event.request, clone));
+        }
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
