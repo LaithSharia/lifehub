@@ -18,8 +18,13 @@ const DriveSync = (() => {
     return DriveAuth.isConnected();
   }
 
-  async function authHeader(interactive = true) {
-    const token = await DriveAuth.getValidToken({ interactive });
+  async function authHeader() {
+    // Never attempts an interactive popup here — by the time this runs
+    // we're several `await`s deep and no longer in direct response to a
+    // click, so a popup here would just get silently blocked by Safari.
+    // The caller (settings.js) is responsible for ensuring a valid token
+    // exists *before* calling syncNow(), via DriveAuth.ensureTokenSync().
+    const token = await DriveAuth.getValidToken();
     return { Authorization: `Bearer ${token}` };
   }
 

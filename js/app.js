@@ -172,7 +172,16 @@ document.getElementById('sync-status-btn').addEventListener('click', () => {
     navigator.serviceWorker.register('service-worker.js').catch(err => console.warn('SW registration failed', err));
   }
 
+  // Load the saved Client ID into memory now, at boot, well before any
+  // click — so that later re-authorization (e.g. the Sync now button,
+  // after the in-memory token has expired) never needs to `await` a
+  // settings read between the click and opening Google's sign-in popup.
+  if (window.DriveAuth) await DriveAuth.primeClientId();
+
   // Try a silent Drive sync on load if previously connected (non-blocking).
+  // This can only ever succeed if the in-memory token is still valid (no
+  // popup is attempted here — see drive-auth.js) since there's no click to
+  // anchor a popup to at boot time.
   if (window.DriveSync && await DriveSync.isConnected()) {
     DriveSync.syncNow({ silent: true }).catch(() => {});
   }

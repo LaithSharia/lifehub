@@ -123,10 +123,23 @@ Views.settings = (() => {
 
     const syncBtn = container.querySelector('#drive-sync-now');
     if (syncBtn) {
-      syncBtn.addEventListener('click', async () => {
-        const result = await DriveSync.syncNow();
-        await handleSyncResult(result, container);
-        render(container);
+      // Not async, and ensureTokenSync runs first with nothing awaited
+      // before it — if your sign-in expired since you last opened the app,
+      // this is what lets the popup reopen instead of being silently
+      // blocked for happening "too late" after the click.
+      syncBtn.addEventListener('click', () => {
+        DriveAuth.ensureTokenSync({
+          onReady: async () => {
+            const result = await DriveSync.syncNow();
+            await handleSyncResult(result, container);
+            render(container);
+          },
+          onError: (err) => {
+            console.warn(err);
+            const reason = err?.message || err?.error || 'could not sign in';
+            showToast(`Sync failed: ${reason}`, 5000);
+          }
+        });
       });
     }
 
