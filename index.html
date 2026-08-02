@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>LifeHub</title>
+
+<!-- Standard PWA -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#149E95">
+
+<!-- iOS home-screen app support (iOS ignores parts of the manifest spec) -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LifeHub">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div id="toast-root" class="toast-root" aria-live="polite"></div>
+
+<header class="app-header safe-top">
+  <div class="app-header__title" id="view-title">LifeHub</div>
+  <button class="icon-btn" id="sync-status-btn" title="Sync status" aria-label="Sync status">
+    <svg viewBox="0 0 24 24" width="22" height="22" id="sync-status-icon"><path fill="currentColor" d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0 0 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 0 0 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+  </button>
+</header>
+
+<main id="app" class="app-main"></main>
+
+<nav class="tab-bar safe-bottom" id="tab-bar">
+  <a href="#/" class="tab-bar__item" data-route="/">
+    <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z"/></svg>
+    <span>Home</span>
+  </a>
+  <a href="#/expenses" class="tab-bar__item" data-route="/expenses">
+    <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M4 4h16a1 1 0 0 1 1 1v3H3V5a1 1 0 0 1 1-1zm-1 6h18v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1zM6 15h4v2H6z"/></svg>
+    <span>Expenses</span>
+  </a>
+  <a href="#/notes" class="tab-bar__item" data-route="/notes">
+    <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1.5V8h4.5zM7 12h10v1.5H7zm0 4h10v1.5H7zm0-8h6v1.5H7z"/></svg>
+    <span>Notes</span>
+  </a>
+  <a href="#/meds" class="tab-bar__item" data-route="/meds">
+    <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M4.22 11.29l7.07-7.07a5 5 0 1 1 7.07 7.07l-7.07 7.07a5 5 0 0 1-7.07-7.07zm7.07-1.06l-4.6 4.6a2.5 2.5 0 1 0 3.54 3.54l4.6-4.6-3.54-3.54z"/></svg>
+    <span>Meds</span>
+  </a>
+  <a href="#/settings" class="tab-bar__item" data-route="/settings">
+    <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm8.94 3a7.9 7.9 0 0 0-.14-1.5l2.03-1.58-2-3.46-2.39.96a8.1 8.1 0 0 0-2.6-1.5L15.5 1h-4l-.34 2.92a8.1 8.1 0 0 0-2.6 1.5l-2.39-.96-2 3.46L6.2 9.5A7.9 7.9 0 0 0 6.06 11c0 .51.05 1.01.14 1.5l-2.03 1.58 2 3.46 2.39-.96c.75.66 1.63 1.17 2.6 1.5L11.5 21h4l.34-2.92a8.1 8.1 0 0 0 2.6-1.5l2.39.96 2-3.46-2.03-1.58c.09-.49.14-.99.14-1.5z" opacity="0"/><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96c-.5-.38-1.04-.7-1.63-.94L14.4 3.34a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.51c-.59.24-1.13.57-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.66 9.37a.5.5 0 0 0 .12.64L4.8 11.6c-.04.3-.07.61-.07.94s.02.64.07.94L2.78 15.06a.5.5 0 0 0-.12.64l1.92 3.32c.12.22.39.3.6.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.51c.05.24.26.42.5.42h3.84c.24 0 .45-.18.5-.42l.36-2.51c.59-.24 1.13-.57 1.63-.94l2.39.96c.22.08.49 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/></svg>
+    <span>Settings</span>
+  </a>
+</nav>
+
+<!-- Google Identity Services, for Drive sync sign-in. Loaded async; if you're
+     offline this simply fails to load and Drive features are unavailable
+     until you're back online — everything else in the app still works. -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<script src="js/vendor/dexie.min.js"></script>
+<script src="js/db.js"></script>
+<script src="js/sync/drive-auth.js"></script>
+<script src="js/sync/drive-sync.js"></script>
+<script src="js/views/dashboard.js"></script>
+<script src="js/views/expenses.js"></script>
+<script src="js/views/notes.js"></script>
+<script src="js/views/medications.js"></script>
+<script src="js/views/settings.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
