@@ -76,6 +76,35 @@ const DriveAuth = (() => {
     return token;
   }
 
+  // Same as connect(), but callable directly from a click handler with zero
+  // `await` beforehand. Browsers (Safari especially) only allow a sign-in
+  // popup to open if it's triggered synchronously within the click's call
+  // stack — any `await` first (even just saving a setting) can make the
+  // browser silently block the popup, which looks like "nothing happened."
+  // `clientId` must be passed in directly (read synchronously from the
+  // input field) rather than fetched from settings, for the same reason.
+  function connectSync(clientId, { onSuccess, onError }) {
+    if (!gisReady()) { onError(new Error('GIS_NOT_LOADED')); return; }
+    try {
+      const client = google.accounts.oauth2.initTokenClient({
+        client_id: clientId,
+        scope: SCOPE,
+        callback: (resp) => {
+          if (resp.error) { onError(resp); return; }
+          accessToken = resp.access_token;
+          tokenExpiresAt = Date.now() + (resp.expires_in * 1000) - 60000;
+          tokenClient = client;
+          tokenClient.__clientId = clientId;
+          setSetting('driveConnected', true).then(() => onSuccess(accessToken));
+        },
+        error_callback: (err) => onError(err)
+      });
+      client.requestAccessToken({ prompt: 'consent' }); // must run synchronously here
+    } catch (err) {
+      onError(err);
+    }
+  }
+
   async function disconnect() {
     if (accessToken && gisReady()) {
       try { google.accounts.oauth2.revoke(accessToken, () => {}); } catch {}
@@ -89,5 +118,5 @@ const DriveAuth = (() => {
     return !!(await getSetting('driveConnected', false));
   }
 
-  return { getValidToken, connect, disconnect, isConnected, gisReady, getClientId };
+  return { getValidToken, connect, connectSync, disconnect, isConnected, gisReady, getClientId };
 })();

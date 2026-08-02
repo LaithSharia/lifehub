@@ -94,21 +94,26 @@ Views.settings = (() => {
 
     const connectBtn = container.querySelector('#drive-connect');
     if (connectBtn) {
-      connectBtn.addEventListener('click', async () => {
+      // Not async, and no `await` before requestAccessToken fires inside
+      // DriveAuth.connectSync — Safari silently blocks the sign-in popup if
+      // it isn't opened synchronously in direct response to this click.
+      connectBtn.addEventListener('click', () => {
         const id = container.querySelector('#client-id-input').value.trim();
         if (!id) { showToast('Paste your Google Client ID first'); return; }
-        await setSetting('googleClientId', id);
         if (!DriveAuth.gisReady()) { showToast('Still loading Google sign-in — try again in a moment'); return; }
-        try {
-          await DriveAuth.connect();
-          showToast('Connected! Syncing…');
-          const result = await DriveSync.syncNow();
-          await handleSyncResult(result, container);
-          render(container);
-        } catch (err) {
-          console.warn(err);
-          showToast('Could not connect — check the Client ID');
-        }
+        DriveAuth.connectSync(id, {
+          onSuccess: async () => {
+            await setSetting('googleClientId', id);
+            showToast('Connected! Syncing…');
+            const result = await DriveSync.syncNow();
+            await handleSyncResult(result, container);
+            render(container);
+          },
+          onError: (err) => {
+            console.warn(err);
+            showToast('Could not connect — check the Client ID');
+          }
+        });
       });
     }
 
