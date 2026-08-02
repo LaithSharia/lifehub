@@ -165,18 +165,22 @@ document.getElementById('sync-status-btn').addEventListener('click', () => {
 (async function boot() {
   await db.open();
   await ensureSeedData();
+
+  // Load the saved Client ID into memory now — before router() renders
+  // anything clickable — so that later re-authorization (e.g. the Sync now
+  // button, after the in-memory token has expired) never needs to `await` a
+  // settings read between the click and opening Google's sign-in popup.
+  // This has to happen before the UI becomes interactive, not just before
+  // any specific button exists, since a fast tap right after reload could
+  // otherwise race this read.
+  if (window.DriveAuth) await DriveAuth.primeClientId();
+
   await applyTheme();
   await router();
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js').catch(err => console.warn('SW registration failed', err));
   }
-
-  // Load the saved Client ID into memory now, at boot, well before any
-  // click — so that later re-authorization (e.g. the Sync now button,
-  // after the in-memory token has expired) never needs to `await` a
-  // settings read between the click and opening Google's sign-in popup.
-  if (window.DriveAuth) await DriveAuth.primeClientId();
 
   // Try a silent Drive sync on load if previously connected (non-blocking).
   // This can only ever succeed if the in-memory token is still valid (no
